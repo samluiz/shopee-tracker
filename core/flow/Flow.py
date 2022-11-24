@@ -1,5 +1,5 @@
 from selenium import webdriver
-from core.flow.DriverSetUp import DriverSetUp
+from DriverSetUp import DriverSetUp
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
@@ -10,15 +10,13 @@ import pickle
 class Flow():
     
   driver = DriverSetUp.set_up()
-   
-  def Login(self):
+  order_id = "221112TN7ND2Y9"
+  
+  def check_order_track_status(self, email, password, order_id):
     driver = self.driver
-    driver.get("https://shopee.com.br/")
-    
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/header/div[1]/nav/ul/a[3]"))
-    ).click()
-    
+    driver.get("https://shopee.com.br/user/purchase/")
+    order_id = self.order_id
+
     login_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div/div/div[2]/form/div/div[2]/div[2]/div[1]/input"))
     )
@@ -31,22 +29,40 @@ class Flow():
         EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div/div/div[2]/form"))
     )
     
-    login_input.send_keys("teste@email.com")
-    password_input.send_keys("testesenha")
+    login_input.send_keys(email)
+    password_input.send_keys(password)
     password_input.send_keys(Keys.ENTER)
     
-    cookies = driver.get_cookies()
+    time.sleep(1)
     
-    print(cookies)
+    # cookies = driver.get_cookies()
+    
+    # for cookie in cookies:
+    #     print(cookie, "\n")
     
     # pickle.dump( driver.get_cookies() , open("cookies.pkl","wb"))
     
-    wrong_credentials = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div/div/div[2]/form/div/div[2]/div[1]"))
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='stardust-popover1']/div"))
     )
     
-    time.sleep(2)
+    order_id_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div[2]/div/div[4]/input"))
+    )
     
-    self.assertEqual(login_input.get_attribute("name"), 'loginKey')
-    self.assertEqual(password_input.get_attribute("name"), 'password')
-    self.assertEqual(wrong_credentials.is_displayed(), True)
+    order_id_input.send_keys(order_id)
+    order_id_input.send_keys(Keys.ENTER)
+    
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "shopee-image__wrapper"))
+    ).click()
+    
+    track_status = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div[2]/div/div/div[9]/div[2]/div[2]/div[2]/div"))
+    )
+    
+    print(getattr(track_status, 'text'))
+    
+    time.sleep(60000)
+    
+Flow().login()
