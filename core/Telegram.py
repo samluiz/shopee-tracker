@@ -2,6 +2,9 @@ import telebot
 from telebot import types
 import asyncio
 import time
+from UserModel import User
+
+user_service = User()
 
 bot = telebot.TeleBot('5921437499:AAFDLifLWEhaU62k1okTM7VA3f8b4cYCpfo')
 
@@ -17,20 +20,21 @@ user = {}
 login = ''
 password = ''
 
-def gathering_user_info():
-  @bot.message_handler(commands=['start'])
-  def first_contact(message):
-    message = message
-    chat = getattr(message, 'chat')
-    user = {
-      id: chat.id,
-      first_name: chat.first_name,
-      last_name: chat.last_name,
-      username: chat.username if not None else chat.first_name
-    }
-    bot.reply_to(message, "Bem vindo ao Shopee Tracker!")
-    chat_id = getattr(chat, 'id')
-    bot.send_message(chat_id, "O que deseja?", reply_markup=markup_track_my_order)
+
+@bot.message_handler(commands=['start'])
+def first_contact(message):
+  message = message
+  chat = getattr(message, 'chat')
+  user['id'] = chat.id
+  user['first_name'] = chat.first_name
+  user['last_name'] = chat.last_name
+  user['username'] = chat.username if not None else chat.first_name
+  user['accepted_term'] = user_accepted
+  print(user)
+  user_service.create_user(user)
+  bot.reply_to(message, "Bem vindo ao Shopee Tracker!")
+  chat_id = getattr(chat, 'id')
+  bot.send_message(chat_id, "O que deseja?", reply_markup=markup_track_my_order)
   
 @bot.message_handler(commands=['rastrear'])
 def terms_of_conditions(message):
