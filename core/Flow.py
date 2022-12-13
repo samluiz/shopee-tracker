@@ -10,12 +10,10 @@ import pickle
 class Flow():
     
   driver = DriverSetUp.set_up()
-  order_id = "221112TN7ND2Y9"
   
-  def check_order_track_status(self, email, password, order_id):
+  def check_order_track_status(self, login, password, order_id):
     driver = self.driver
     driver.get("https://shopee.com.br/user/purchase/")
-    order_id = self.order_id
 
     login_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div/div/div[2]/form/div/div[2]/div[2]/div[1]/input"))
@@ -29,7 +27,7 @@ class Flow():
         EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div/div/div[2]/form"))
     )
     
-    login_input.send_keys(email)
+    login_input.send_keys(login)
     password_input.send_keys(password)
     password_input.send_keys(Keys.ENTER)
     
@@ -58,11 +56,4 @@ class Flow():
     ).click()
     
     track_status = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//*[@id='main']/div/div[2]/div/div[2]/div/div/div[9]/div[2]/div[2]/div[2]/div"))
-    )
-    
-    print(getattr(track_status, 'text'))
-    
-    time.sleep(60000)
-    
-Flow().login()
+        EC.presence_of_element_located((By.CLASS_NAME, "w5KHDc"))).screenshot("/core/screenshots/status.png")
