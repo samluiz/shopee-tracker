@@ -1,5 +1,5 @@
 from selenium import webdriver
-from DriverSetUp import DriverSetUp
+from config.driver import DriverSetUp
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait

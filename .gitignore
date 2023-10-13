@@ -1,3 +1,5 @@
-venv
 .vscode
 .env
+/core/db/*.db
+/core/*.session
+/core/__pycache__

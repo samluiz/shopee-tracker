@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "special-tracker"
+version = "0.1.0"
+description = "Special tracker app"
+authors = ["samluiz"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+selenium = "^4.14.0"
+SQLAlchemy = "^2.0.22"
+passlib = "^1.7.4"
+Pyrogram = "^2.0.106"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

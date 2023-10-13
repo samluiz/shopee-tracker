@@ -1,14 +1,12 @@
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session, relationship
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, Text, create_engine, select, Enum, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, relationship
+from sqlalchemy import Column, Integer, Boolean, ForeignKey, Text, select, Enum, ForeignKey
 from passlib.hash import bcrypt
-from Enums import Status, Platform
+from models.enums import Status, Platform
+from config.database import SqliteConfig
 
-engine = create_engine("sqlite:///core/db/shopeetracker.db", echo=True, future=True)
-Base = declarative_base()
-Base.metadata.bind = engine
-Session = scoped_session(sessionmaker(bind=engine, autoflush=True))
-session = Session()
+config = SqliteConfig()
+Base = config.get_base()
+session = config.get_session()
 
 class User(Base):
   __tablename__ = "user"
@@ -61,13 +59,8 @@ class User(Base):
 class Order(Base):
   __tablename__ = "order"
   
+  id = Column(Integer, primary_key=True, autoincrement="auto") 
   order_id = Column(Integer)
   user_id = Column(Integer, ForeignKey(User.id))
   platform = Column(Enum(Platform))
   user = relationship("User", back_populates="orders")
-    
-def init_db():
-  Base.metadata.create_all(engine)
-    
-if __name__ == "__main__":
-  init_db()

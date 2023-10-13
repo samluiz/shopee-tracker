@@ -1,18 +1,22 @@
 from pyrogram import Client, filters, ContinuePropagation, StopPropagation
 from os import getenv
 from dotenv import load_dotenv
-from Models import User, Order, init_db
-from Enums import Status, Platform
+from models.models import User, Order
+from config.database import SqliteConfig
+from models.enums import Status, Platform
+from scripts.scraping import ShopeeFlow
 
 load_dotenv()
 
-app = Client("ShopeeTracker", api_id=getenv("API_ID"), api_hash=getenv("API_HASH"), bot_token=getenv("TOKEN"))
+app = Client("Tracker+", api_id=getenv("TELEGRAM_API_ID"), api_hash=getenv("TELEGRAM_API_HASH"), bot_token=getenv("TELEGRAM_BOT_TOKENS"))
 
 # Creating User Object
 user_service = User()
 
 # Creating User Table in the Database
-init_db()
+config = SqliteConfig()
+config.init_db()
+scrapper = ShopeeFlow()
 
 privacy_terms = "A sua privacidade é importante para nós. É política do ShopeeTracker respeitar a sua privacidade em relação a qualquer informação sua que possamos coletar nesta conversa. Solicitamos informações pessoais apenas quando realmente precisamos delas para lhe fornecer um serviço. Fazemo-lo por meios justos e legais, com o seu conhecimento e consentimento. Também informamos por que estamos coletando e como será usado. Apenas retemos as informações coletadas pelo tempo necessário para fornecer o serviço solicitado. Quando armazenamos dados, protegemos com criptografia de ponta a ponta dentro de meios comercialmente aceitáveis ​​para evitar perdas e roubos, bem como acesso, divulgação, cópia, uso ou modificação não autorizados. Não compartilhamos informações de identificação pessoal publicamente ou com terceiros."
 
@@ -40,7 +44,7 @@ async def getting_user_info(client, message):
   global status
   chat_id = message.chat.id
   await message.reply('Olá! Eu sou um rastreador de pacotes não rastreáveis!')
-  await app.send_message(chat_id, "O que deseja fazer?\n\n/rastrear\n\n/verPedidosCadastrados")
+  await app.send_message(chat_id, "O que deseja fazer?\n\n/rastrear\n\n/pedidos")
   status = Status.STARTED.name
   raise StopPropagation
   
@@ -62,17 +66,17 @@ async def login_type(client, message):
   status = Status.ACCEPTED_TERMS.name
   global user_accepted
   user_accepted = True
-  await app.send_message(chat_id, "Em qual plataforma você deseja rastrear seu pedido?")
+  await app.send_message(chat_id, "Em qual plataforma você deseja rastrear seu pedido?\n\n/shopee\n\n/amazon")
   raise StopPropagation
 
 @app.on_message(filters.command(commands=['amazon', 'shopee']), group=-1)
 async def amazon(client, message):
   if message.text == '/amazon':
     platform = Platform.AMAZON.name
-    await app.send_message(chat_id, "Qual sua forma de login preferida na Amazon?\n\n/email\n/telefone\n/username")
+    await app.send_message(chat_id, "Qual sua forma de login preferida na Amazon?\n\n/email\n\n/telefone\n\n/username")
   if message.text == '/shopee':
     platform = Platform.SHOPEE.name
-    await app.send_message(chat_id, "Qual sua forma de login preferida na Shopee?\n\n/email\n/telefone\n/username")
+    await app.send_message(chat_id, "Qual sua forma de login preferida na Shopee?\n\n/email\n\n/telefone\n\n/username")
   
 @app.on_message(filters.command(commands=['email', 'telefone', 'username']), group=-1)
 async def getting_login_type(client, message):
@@ -93,7 +97,7 @@ async def getting_login(client, message):
   global order_id
   
   # Getting Login and asking for password
-  if not login_message_id:
+  if not login_message_id and not login:
     login_message_id = get_chat_and_message_id(message)
   if message.id == login_message_id:
     login = message.text
@@ -105,8 +109,6 @@ async def getting_login(client, message):
       password_message_id = get_chat_and_message_id(message)
     if not password and message.id == password_message_id:
       password = message.text
-      from Scraping import ShopeeFlow
-      scrapper = ShopeeFlow()
       isLogged = scrapper.login(login, password)
       if not isLogged:
         status = Status.LOGIN_FAILED.name
