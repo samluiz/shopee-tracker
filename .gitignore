@@ -1,5 +1,5 @@
 .vscode
 .env
-/core/db/*.db
-/core/*.session
-/core/__pycache__
+*.db
+*.session
+__pycache__
